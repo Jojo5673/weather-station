@@ -184,13 +184,6 @@ void initialize(void){
   //CONNECT TO WIFI
   Serial.printf("Connecting to %s \n", ssid);
   WiFi.begin(ssid, password);
-  
-  while (WiFi.status() != WL_CONNECTED) {
-      vTaskDelay(1000 / portTICK_PERIOD_MS); 
-      Serial.print(".");
-  }
-
-  Serial.println("\n\n***** Wi-Fi CONNECTED! *****\n\n");
    
   initMQTT();          // INIT MQTT  
   vUpdateFunction();

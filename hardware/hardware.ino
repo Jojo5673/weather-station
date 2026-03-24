@@ -27,14 +27,6 @@
 #include <ArduinoJson.h>
 #endif
 
-#ifndef NTP_H
-#include "NTP.h"
-#endif
-
-#ifndef MQTT_H
-#include "mqtt.h"
-#endif
-
 #define TFT_DC    17
 #define TFT_CS    5
 #define TFT_RST   16
@@ -53,13 +45,15 @@
 #define BLUE 0x563d
 #define BROWN 0x9328
 
+//MQTT and NTP declarations
+
 static const char* id             = "620172690";
 static const char* pubtopic       = "620172690";                   
 static const char* subtopic[]     = {"620172690_sub","/elet2415"};  
 static const char* mqtt_server    = "www.yanacreations.com";            
 static uint16_t mqtt_port         = 1883;
 
-const char* ssid                  = "One"; // Add your Wi-Fi ssid
+const char* ssid                  = "CWC-1455723"; // Add your Wi-Fi ssid
 const char* password              = "g5dnTphrhqpw"; // Add your Wi-Fi password 
 
 TaskHandle_t xMQTT_Connect          = NULL; 
@@ -68,14 +62,24 @@ TaskHandle_t xLOOPHandle            = NULL;
 TaskHandle_t xUpdateHandle          = NULL;
 TaskHandle_t xButtonCheckeHandle    = NULL; 
 
+void callback(char* topic, byte* payload, unsigned int length);
+void vUpdate(void* pvParameters);
+void vButtonCheck(void* pvParameters);
+
+#ifndef NTP_H
+#include "NTP.h"
+#endif
+
+#ifndef MQTT_H
+#include "mqtt.h"
+#endif
+
 int moisture;
 float humidity;
 float temperature;
 float pressure;
 float altitude;
 float heat_index;
-
-void callback(char* topic, byte* payload, unsigned int length);
 
 Adafruit_BMP280 bmp;
 DHT dht(DHTPIN, DHTTYPE);
@@ -117,44 +121,36 @@ void setup() {
 }
 
 void loop() {
-  moisture = soilPercent(analogRead(SOIL));
-  Serial.print("Soil Moisture Percent: ");
-  Serial.print(moisture); // read sensor
-  Serial.println(" %"); 
+    vTaskDelete(NULL); // delete the loop task entirely
+}
 
-  humidity = dht.readHumidity();
-  Serial.print(F("Humidity = "));
-  Serial.print(humidity);
-  Serial.println(" %");
+void vUpdate(void* pvParameters) {
+  configASSERT(((uint32_t)pvParameters) == 1);
 
-  temperature = dht.readTemperature();
-  Serial.print(F("Temperature = "));
-  Serial.print(temperature);
-  Serial.println(" *C");
+  for (;;) {
+      moisture     = soilPercent(analogRead(SOIL));
+      humidity     = dht.readHumidity();
+      temperature  = dht.readTemperature();
+      pressure     = bmp.readPressure();
+      altitude     = bmp.readAltitude(1013.25);
+      heat_index   = dht.computeHeatIndex(temperature, humidity, false);
 
-  pressure = bmp.readPressure();
-  Serial.print(F("Pressure = "));
-  Serial.print(pressure);
-  Serial.println(" Pa");
+      display_values();
+      if(mqtt.connected()){  // only publish when ready
+        publish();
+      }
 
-  altitude = bmp.readAltitude(1013.25);
-  Serial.print(F("Approx altitude = "));
-  Serial.print(altitude); 
-  Serial.println(" m");
-
-  heat_index = dht.computeHeatIndex(temperature, humidity, false);;
-  Serial.print(F("Heat index "));
-  Serial.print(heat_index); 
-  Serial.println(" *C");
-
-  display_values();
-  publish();
-  Serial.println();
-  vTaskDelay(2000 / portTICK_PERIOD_MS);  
+      vTaskDelay(2000 / portTICK_PERIOD_MS);
+  }
 }
 
 void publish(){   
-  char* payload;
+  if (!mqtt.connected()) {
+    Serial.println("MQTT not connected, skipping publish");
+    return;
+  }
+
+  char payload[1100];
 
   JsonDocument doc; // Create JSon object
   doc["id"]           = id; 
@@ -178,13 +174,12 @@ void publish(){
       res = false;
       throw false;
     }else{
-      Serial.print(" - Successful")
+      Serial.print(" - Successful");
     }
   }
   catch(...){
     Serial.printf("\nError (%d) >> Unable to publish message\n", res);
   }
-  return res;
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -199,6 +194,12 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 
   Serial.printf("Payload : %s \n",received);
+}
+
+unsigned long getTimeStamp(void){
+    time_t now;  
+    time(&now);
+    return now;
 }
 
 void display_values(){
