@@ -4,7 +4,36 @@
 #include <DHT.h>
 #include "Adafruit_GFX.h"
 #include "Adafruit_ILI9341.h"
+#include <rom/rtc.h>
 #include "screen.h"
+
+#ifndef _WIFI_H 
+#include <WiFi.h>
+#endif
+
+#ifndef STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifndef STDIO_H
+#include <stdio.h>
+#endif
+
+#ifndef ARDUINO_H
+#include <Arduino.h>
+#endif 
+ 
+#ifndef ARDUINOJSON_H
+#include <ArduinoJson.h>
+#endif
+
+#ifndef NTP_H
+#include "NTP.h"
+#endif
+
+#ifndef MQTT_H
+#include "mqtt.h"
+#endif
 
 #define TFT_DC    17
 #define TFT_CS    5
@@ -24,12 +53,29 @@
 #define BLUE 0x563d
 #define BROWN 0x9328
 
+static const char* id             = "620172690";
+static const char* pubtopic       = "620172690";                   
+static const char* subtopic[]     = {"620172690_sub","/elet2415"};  
+static const char* mqtt_server    = "www.yanacreations.com";            
+static uint16_t mqtt_port         = 1883;
+
+const char* ssid                  = "One"; // Add your Wi-Fi ssid
+const char* password              = "g5dnTphrhqpw"; // Add your Wi-Fi password 
+
+TaskHandle_t xMQTT_Connect          = NULL; 
+TaskHandle_t xNTPHandle             = NULL;  
+TaskHandle_t xLOOPHandle            = NULL;  
+TaskHandle_t xUpdateHandle          = NULL;
+TaskHandle_t xButtonCheckeHandle    = NULL; 
+
 int moisture;
 float humidity;
 float temperature;
 float pressure;
 float altitude;
 float heat_index;
+
+void callback(char* topic, byte* payload, unsigned int length);
 
 Adafruit_BMP280 bmp;
 DHT dht(DHTPIN, DHTTYPE);
@@ -66,6 +112,8 @@ void setup() {
   tft.setRotation(2);
   tft.drawRGBBitmap(0,0, screen, 240, 320); // DRAW IMAGE ON SCREEN
   tft.setTextSize(2);
+
+  initialize(); 
 }
 
 void loop() {
@@ -100,8 +148,57 @@ void loop() {
   Serial.println(" *C");
 
   display_values();
+  publish();
   Serial.println();
-  delay(2000);
+  vTaskDelay(2000 / portTICK_PERIOD_MS);  
+}
+
+void publish(){   
+  char* payload;
+
+  JsonDocument doc; // Create JSon object
+  doc["id"]           = id; 
+  doc["timestamp"]    = getTimeStamp();
+  doc["moisture"]     = moisture;
+  doc["humidity"]     = humidity;
+  doc["temperature"]  = temperature;
+  doc["pressure"]     = pressure;
+  doc["altitude"]     = altitude;
+  doc["heat_index"]   = heat_index;
+
+  serializeJson(doc, payload);
+
+  bool res = false;
+  try{
+    Serial.printf("Publising payload: ", payload);
+    
+    res = mqtt.publish(pubtopic, payload);
+
+    if(!res){
+      res = false;
+      throw false;
+    }else{
+      Serial.print(" - Successful")
+    }
+  }
+  catch(...){
+    Serial.printf("\nError (%d) >> Unable to publish message\n", res);
+  }
+  return res;
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  // ############## MQTT CALLBACK  ######################################
+  // RUNS WHENEVER A MESSAGE IS RECEIVED ON A TOPIC SUBSCRIBED TO
+  
+  Serial.printf("\nMessage received : ( topic: %s ) \n",topic ); 
+  char *received = new char[length + 1] {0}; 
+  
+  for (int i = 0; i < length; i++) { 
+    received[i] = (char)payload[i];    
+  }
+
+  Serial.printf("Payload : %s \n",received);
 }
 
 void display_values(){
