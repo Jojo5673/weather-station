@@ -53,8 +53,8 @@ static const char* subtopic[]     = {"620172690_sub","/elet2415"};
 static const char* mqtt_server    = "www.yanacreations.com";            
 static uint16_t mqtt_port         = 1883;
 
-const char* ssid                  = "CWC-1455723"; // Add your Wi-Fi ssid
-const char* password              = "g5dnTphrhqpw"; // Add your Wi-Fi password 
+const char* ssid                  = "NOIR"; // Add your Wi-Fi ssid
+const char* password              = "baconeggandcheese"; // Add your Wi-Fi password 
 
 TaskHandle_t xMQTT_Connect          = NULL; 
 TaskHandle_t xNTPHandle             = NULL;  
@@ -166,7 +166,8 @@ void publish(){
 
   bool res = false;
   try{
-    Serial.printf("Publising payload: ", payload);
+    Serial.println("Publising payload: ");
+    Serial.println(payload);
     
     res = mqtt.publish(pubtopic, payload);
 
@@ -174,7 +175,7 @@ void publish(){
       res = false;
       throw false;
     }else{
-      Serial.print(" - Successful");
+      Serial.println(" - Successful");
     }
   }
   catch(...){
@@ -202,7 +203,48 @@ unsigned long getTimeStamp(void){
     return now;
 }
 
+void draw_indicators(int wifi_x, int mqtt_x, int y){
+
+  static bool lastWifi = false;
+  static bool lastMqtt = false;
+
+  bool wifiConnected = WiFi.status() == WL_CONNECTED;
+  bool mqttConnected = mqtt.connected();
+
+  // only redraw if state changed
+  if(wifiConnected == lastWifi && mqttConnected == lastMqtt) return;
+
+  lastWifi = wifiConnected;
+  lastMqtt = mqttConnected;
+
+  int wifi_y =  y + 4;
+  uint16_t color = ILI9341_WHITE;
+
+  //wifi symbol
+  tft.fillTriangle(wifi_x-9, wifi_y-9, wifi_x+9, wifi_y-9, wifi_x, wifi_y+3, BLUE); //center mask
+  tft.drawCircle(wifi_x, wifi_y, 9, color);
+  tft.drawCircle(wifi_x, wifi_y, 8, color);
+  tft.drawCircle(wifi_x, wifi_y, 5, color);
+  tft.drawCircle(wifi_x, wifi_y, 4, color);
+  tft.fillCircle(wifi_x, wifi_y, 1, color); // dot at bottom
+
+  tft.fillTriangle(wifi_x+17, wifi_y+9, wifi_x-4, wifi_y+9, wifi_x+7, wifi_y-6, BLUE); // left mask
+  tft.fillTriangle(wifi_x-18, wifi_y+9, wifi_x+3, wifi_y+9, wifi_x-7, wifi_y-6, BLUE); // right mask
+
+  if(!wifiConnected){
+    // line through it
+    tft.drawLine(wifi_x-5, y-5, wifi_x+5, y+5, color);
+  }
+
+  uint16_t mqttColor = mqttConnected ? ILI9341_GREEN : ILI9341_RED;
+  tft.fillCircle(mqtt_x, y, 5, mqttColor);
+  tft.drawCircle(mqtt_x, y, 5, color);
+    
+}
+
 void display_values(){
+  draw_indicators(104, 129, 11);
+
   char buffer[20];
   tft.setTextColor(ILI9341_WHITE, BLUE);
   

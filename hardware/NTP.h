@@ -134,8 +134,12 @@ void vNTP( void * pvParameters ) {
 
   // Wait for WiFi connection before initializing NTP
   while (WiFi.status() != WL_CONNECTED) {
+      Serial.print(".");
       vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
+  Serial.println("");
+
+  Serial.println("WIFI connected!");
 
   NTP.setup(); // Config NTP
  
