@@ -5,8 +5,6 @@
 #                                                    CLASSES CONTAINING ALL THE APP FUNCTIONS                                                                                                    #
 #################################################################################################################################################
 
-from app import Mqtt
-
 class DB:
 
     def __init__(self,Config):
@@ -44,6 +42,9 @@ class DB:
     def __del__(self):
             # Delete class instance to free resources
             pass
+    
+    def set_mqtt(self, Mqtt):
+        self.mqtt = Mqtt
  
     ####################
     # DATABASE UTIL FUNCTIONS  #
@@ -77,7 +78,7 @@ class DB:
         '''SETS THE UNITS FOR THE STATION. THIS SHOULD BE CALLED ONCE WHEN THE STATION IS FIRST SET UP.'''
         try:
             #validate data here before sending to hardware
-            Mqtt.publish("620172690", self.dumps(data)) # PUBLISH UNITS TO MQTT TOPIC. THIS SHOULD BE SUBSCRIBED TO BY THE HARDWARE TO SET THE UNITS ON THE HARDWARE SIDE
+            self.mqtt.publish("620172690", self.dumps(data)) # PUBLISH UNITS TO MQTT TOPIC. THIS SHOULD BE SUBSCRIBED TO BY THE HARDWARE TO SET THE UNITS ON THE HARDWARE SIDE
         except Exception as e:
             msg = str(e)
             print("setUnits error ",msg)
