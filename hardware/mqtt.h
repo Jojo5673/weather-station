@@ -72,10 +72,10 @@ void MQTT_Connect( void * pvParameters ){
             break;
         } 
         else {
-          Serial.printf("\nConnection failed with status code : %d ,  re-trying in 10 seconds\n", mqtt.state());   
+          Serial.printf("\nConnection failed with status code : %d ,  re-trying in 5 seconds\n", mqtt.state());   
         }
 
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }   
    
   }

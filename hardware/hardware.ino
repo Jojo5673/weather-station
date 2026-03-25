@@ -205,8 +205,8 @@ unsigned long getTimeStamp(void){
 
 void draw_indicators(int wifi_x, int mqtt_x, int y){
 
-  static bool lastWifi = false;
-  static bool lastMqtt = false;
+  static bool lastWifi = true;
+  static bool lastMqtt = true;
 
   bool wifiConnected = WiFi.status() == WL_CONNECTED;
   bool mqttConnected = mqtt.connected();

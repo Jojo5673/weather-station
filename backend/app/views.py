@@ -33,6 +33,7 @@ def set_units():
         '''Add your code here to complete this route'''
         try:
             data = request.get_json()
+            print(data)
             if data:
                 result = mongo.setUnits(data)
                 if result:
