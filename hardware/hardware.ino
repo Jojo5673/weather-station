@@ -80,6 +80,10 @@ float temperature;
 float pressure;
 float altitude;
 float heat_index;
+char t_unit = 'C';
+char a_unit = 'A';
+char p_unit = 'P';
+
 
 Adafruit_BMP280 bmp;
 DHT dht(DHTPIN, DHTTYPE);
@@ -184,17 +188,36 @@ void publish(){
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  // ############## MQTT CALLBACK  ######################################
-  // RUNS WHENEVER A MESSAGE IS RECEIVED ON A TOPIC SUBSCRIBED TO
-  
   Serial.printf("\nMessage received : ( topic: %s ) \n",topic ); 
   char *received = new char[length + 1] {0}; 
-  
+
   for (int i = 0; i < length; i++) { 
     received[i] = (char)payload[i];    
   }
-
   Serial.printf("Payload : %s \n",received);
+
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, received);  
+  delete[] received;
+
+  if (error) {
+    Serial.print("deserializeJson() failed: ");
+    Serial.println(error.c_str());
+    return;
+  }
+
+  const char* t = doc["temperature"] | "c";
+  const char* a = doc["altitude"]    | "m";
+  const char* p = doc["pressure"]    | "pa";
+  
+  if (strcasecmp(t, "f")   == 0) t_unit = 'F';
+  if (strcasecmp(t, "c")   == 0) t_unit = 'C';
+  if (strcasecmp(a, "m")   == 0) a_unit = 'M';
+  if (strcasecmp(a, "ft")  == 0) a_unit = 'F';
+  if (strcasecmp(p, "atm") == 0) p_unit = 'A';
+  if (strcasecmp(p, "pa")  == 0) p_unit = 'P';
+
+
 }
 
 unsigned long getTimeStamp(void){
@@ -249,8 +272,9 @@ void display_values(){
   tft.setTextColor(ILI9341_WHITE, BLUE);
   
   // temperature
-  int intPart = (int)temperature;
-  int decPart = (int)(fabs(temperature - intPart) * 10 + 0.5); // 1 decimal place
+  float disp_temp = (t_unit == 'F') ? celsiusToFahrenheit(temperature) : temperature;
+  int intPart = (int)disp_temp;
+  int decPart = (int)(fabs(disp_temp - intPart) * 10 + 0.5);
 
   sprintf(buffer, "%3d", intPart); // decimal part
   tft.setCursor(1, 77);
@@ -263,7 +287,7 @@ void display_values(){
   tft.print(buffer);
 
   tft.setCursor(80, 75); //unit
-  tft.print("C");
+  tft.print(t_unit);
   
   //humidity
   sprintf(buffer, "%5.1f%%", humidity);
@@ -271,34 +295,39 @@ void display_values(){
   tft.print(buffer);
 
   //heat index
+  float disp_hi = (t_unit == 'F') ? celsiusToFahrenheit(heat_index) : heat_index;
   tft.setTextSize(1);
   tft.setCursor(7, 117);
   tft.print("HI");
 
   tft.setTextSize(2);
-  sprintf(buffer, "%5.1fC", heat_index);
+  sprintf(buffer, "%5.1f%c", disp_hi, t_unit);  
   tft.setCursor(18, 113);
   tft.print(buffer);
 
   //pressure
   tft.setTextSize(1);
-  sprintf(buffer, "%6dPa", (int)pressure);
-  tft.setCursor(174, 118);
+  if (p_unit == 'A') {
+    sprintf(buffer, "%.4fatm", pascalsToAtm(pressure));
+  } else {
+    sprintf(buffer, "%7dPa", (int)pressure);
+  }
+  tft.setCursor(166, 118);
   tft.print(buffer);
 
   //altitude
+  float disp_alt = (a_unit == 'F') ? metersToFeet(altitude) : altitude;
   tft.fillRect(224, 95, 5, 69, ILI9341_WHITE);
   tft.fillTriangle(226, 67, 234, 98, 218, 98, ILI9341_WHITE);
   tft.fillTriangle(226, 193, 219, 162, 233, 161, ILI9341_WHITE);
 
   tft.setTextSize(2);
-  sprintf(buffer, "%5dm", (int)altitude);
+  sprintf(buffer, (a_unit == 'F') ? "%4dft" : "%5dm", (int)disp_alt);
   tft.setCursor(150, 129);
   tft.print(buffer);
 
   // moisture
   sprintf(buffer, "%3d%%", moisture);   // fixed width
-
   tft.setTextColor(ILI9341_WHITE, BROWN);
   tft.setCursor(110, 297);
   tft.print(buffer);
@@ -307,4 +336,16 @@ void display_values(){
 int soilPercent(int value){
     int percent = map(value, 2600, 550, 0, 100);
     return constrain(percent, 0, 100);
+}
+
+float celsiusToFahrenheit(float celsius) {
+    return (celsius * 9.0 / 5.0) + 32.0;
+}
+
+float metersToFeet(float meters) {
+    return meters * 3.28084;
+}
+
+float pascalsToAtm(float pascals) {
+    return pascals / 101325.0;
 }
