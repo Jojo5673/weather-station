@@ -2,27 +2,34 @@
     <VContainer align="center" fluid>
         <VRow justify="center" style="max-width: 1200px;">
             <VCol align="center">
-                <v-sheet class="mb-1 w-100 rounded-lg" style="max-width: 800;" color="surface">
-                    <v-card class="text-secondary" title="LED Controls" color="surface" subtitle="Recent settings" variant="tonal" flat></v-card>
+                <v-sheet class="mb-1 w-100 rounded-lg" style="max-width: 800;" color="transparent">
+                    <v-card 
+                        class="text-blue-grey-lighten-3" 
+                        title="Unit Controls" 
+                        color="#1e2d3d"
+                        subtitle="Change display units on station" 
+                        variant="flat" 
+                        flat
+                    ></v-card>
                 </v-sheet>
-                <v-sheet class="mb-1 w-100" style="max-width: 800;" color="surface">
-                    <v-card class="pt-5" color="surface" variant="tonal">
-                        <v-slider class="pt-2 bg-surface" append-icon="mdi:mdi-car-light-high" density="compact" thumb-size="16" color="secondary" label="Brightness" min="0" max="250" step="10" show-ticks thumb-label="always" v-model="led.brightness"></v-slider>
+                <v-sheet class="mb-1 w-100" style="max-width: 800;" color="transparent">
+                    <v-card class="pa-5" color="#1e2d3d" variant="flat">
+                        <v-radio-group v-model="units.temperature" label="Temperature Unit" inline>
+                            <v-radio label="Celsius" value="c" color="blue-lighten-2"></v-radio>
+                            <v-radio label="Fahrenheit" value="f" color="blue-lighten-2"></v-radio>
+                        </v-radio-group>
+                        <v-radio-group v-model="units.altitude" label="Altitude Unit" inline class="mt-4">
+                            <v-radio label="Meters" value="m" color="blue-lighten-2"></v-radio>
+                            <v-radio label="Feet" value="ft" color="blue-lighten-2"></v-radio>
+                        </v-radio-group>
+                        <v-radio-group v-model="units.pressure" label="Pressure Unit" inline class="mt-4">
+                            <v-radio label="Pascals" value="pa" color="blue-lighten-2"></v-radio>
+                            <v-radio label="Atmospheres" value="atm" color="blue-lighten-2"></v-radio>
+                        </v-radio-group>
+                        <v-btn class="mt-4" color="blue-darken-1" variant="tonal" @click="updateUnits">Update Units</v-btn>
                     </v-card>
                 </v-sheet>
-                <v-sheet class="mb-1 w-100" justify="center" style="max-width: 800;" color="surface">
-                    <v-card class="pt-5" color="surface" variant="tonal">
-                        <v-slider class="pt-2 bg-surface" append-icon="mdi:mdi-led-on" density="compact" thumb-size="16" color="secondary" label="LED Nodes" min="1" max="7" step="1" show-ticks thumb-label="always" v-model="led.leds"></v-slider>
-                    </v-card>
-                </v-sheet>
-                <v-sheet class="mb-1 w-100 pa-2" justify="center" border style="max-width: 800;" color="surface">
-                    <v-progress-circular rotate="0" size="200" :width="15" :model-value="led.leds *15" :color="indicatorColor"><span class="text-onSurface font-weight-bold">{{ led.leds }} LED(s)</span></v-progress-circular>
-                </v-sheet>
             </VCol>
-            <VCol align="center">
-                <v-color-picker v-model="led.color"></v-color-picker>
-            </VCol>
-
         </VRow>
     </VContainer>
 </template>
@@ -31,62 +38,43 @@
 /** JAVASCRIPT HERE */
 
 // IMPORTS
-import { ref,reactive,watch ,onMounted,onBeforeUnmount,computed } from "vue";  
-import { useRoute ,useRouter } from "vue-router";
-import { useMqttStore } from '@/store/mqttStore'; // Import Mqtt Store
-import { storeToRefs } from "pinia";
+import { reactive} from "vue";  
+import { useAppStore } from '@/store/appStore'; // Import App Store
+
 
 
 // VARIABLES
-const Mqtt = useMqttStore();
-const { payload, payloadTopic } = storeToRefs(Mqtt);
-const router      = useRouter();
-const route       = useRoute(); 
-const led = reactive({"brightness":255,"leds":1,"color":{ r: 255, g: 0, b: 255, a: 1 }});
-let timer, ID = 1000; 
+
+const units = reactive({"temperature": "c", "altitude": "m", "pressure": "pa"});
+const AppStore = useAppStore();
 
 
 // FUNCTIONS
-onMounted(()=>{
-    // THIS FUNCTION IS CALLED AFTER THIS COMPONENT HAS BEEN MOUNTED
-    Mqtt.connect(); // Connect to Broker located on the backend
-    setTimeout( ()=>{
-        // Subscribe to each topic
-        Mqtt.subscribe("620172690");
-        // Mqtt.subscribe("topic2");
-    },3000);
-});
-
-
-onBeforeUnmount(()=>{
-    // THIS FUNCTION IS CALLED RIGHT BEFORE THIS COMPONENT IS UNMOUNTED
-    // unsubscribe from all topics
-    Mqtt.unsubcribeAll();
-});
-
-
-// WATCHERS
-watch(led,(controls)=>{
-    clearTimeout(ID);
-    ID = setTimeout(()=>{
-        const message = JSON.stringify({"type":"controls","brightness":controls.brightness,"leds":controls.leds,"color":
-        controls.color});
-        Mqtt.publish("620172690_sub",message); // Publish to a topic subscribed to by the hardware
-    },1000)
-})
-
-// COMPUTED PROPERTIES
-    const indicatorColor = computed(()=>{
-        return `rgba(${led.color.r},${led.color.g},${led.color.b},${led.color.a})`
-})
+const updateUnits = async () => {
+    const result = await AppStore.updateUnits(units);
+    if (result.status === 'success') {
+        alert('Units updated successfully!');
+    } else {
+        alert('Failed to update units: ' + (result.message || 'Unknown error'));
+    }
+};
 
 
 </script>
 
 
 <style scoped>
-/** CSS STYLE HERE */
+:deep(.v-label) {
+    color: #aac3e1 !important;
+}
 
+:deep(.v-radio .v-label) {
+    color: #cdd9e8 !important;
+}
 
+:deep(.v-input__label) {
+    color: #7a9cbf !important;
+    font-weight: 600;
+}
 </style>
   

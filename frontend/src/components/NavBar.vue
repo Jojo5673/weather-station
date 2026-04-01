@@ -5,13 +5,13 @@
         <VCol cols="1" align="left"> </VCol>
 
         <VCol cols="10" align="center">
-          <RouterLink class="route" :to="{ name: 'Home' }">
+          <RouterLink class="route" :to="{ name: 'Forecast' }">
             <VBtn
               class="text-subtitle-2"
               density="compact"
               color="primary"
-              :variant="route.name == 'Home' ? 'tonal' : 'text'"
-              >Home</VBtn
+              :variant="route.name == 'Forecast' ? 'tonal' : 'text'"
+              >Forecast</VBtn
             >
           </RouterLink>
 
@@ -46,17 +46,6 @@
             >
           </RouterLink>
         </VCol>
-        <VCol cols="1" align="right">
-          <VBtn
-            size="x-small"
-            :elevation="0"
-            icon
-            @click="darkmode = !darkmode"
-          >
-            <VIcon v-if="darkmode" icon="mdi:mdi-weather-night"></VIcon>
-            <VIcon v-else icon="mdi:mdi-white-balance-sunny"></VIcon>
-          </VBtn>
-        </VCol>
       </VRow>
     </VContainer>
   </VToolbar>
@@ -69,7 +58,7 @@ import { ref, watch, onMounted, onBeforeMount } from "vue";
 
 // VARIABLES
 const theme = useTheme();
-const darkmode = ref(false);
+const darkmode = ref(true);
 const router = useRouter();
 const route = useRoute();
 

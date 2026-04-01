@@ -47,86 +47,103 @@ def set_units():
     return jsonify({"status": "invalid method"}), 405
 
 
-# @app.route('/api/climo/get/<start>/<end>', methods=['GET']) 
-# def get_all(start,end):   
-#     '''RETURNS ALL THE DATA FROM THE DATABASE THAT EXIST IN BETWEEN THE START AND END TIMESTAMPS'''
+@app.route('/api/frequency/<variable>/<start>/<end>', methods=['GET']) 
+def get_freq_distro(variable,start,end):   
+    '''RETURNS FREQUENCY DISTRIBUTION FOR SPECIFIED VARIABLE'''
    
-#     if request.method == "GET":
-#         '''Add your code here to complete this route'''
-#         try:
-#             START = escape(start)
-#             END = escape(end)
-#             data = mongo.getAllInRange(START, END)
-#             if data:
-#                 return jsonify({"status": "found", "data":data})
-                
-#         except Exception as e:
-#             print(f"get_data error: f{str(e)}")
-#     # FILE DATA NOT EXIST
-#     return jsonify({"status":"not found","data":[]})
+    if request.method == "GET": 
+        '''Add your code here to complete this route'''     
 
-
-# @app.route('/api/mmar/temperature/<start>/<end>', methods=['GET']) 
-# def get_temperature_mmar(start,end):   
-#     '''RETURNS MIN, MAX, AVG AND RANGE FOR TEMPERATURE. THAT FALLS WITHIN THE START AND END DATE RANGE'''
-   
-#     if request.method == "GET": 
-#         '''Add your code here to complete this route'''
-
-#         try:
-#             START = escape(start)
-#             END = escape(end)
-#             data = mongo.temperatureMMAR(START, END)
-#             if data:
-#                 return jsonify({"status": "found", "data":data})
+        try:
+            VARIABLE = escape(variable)
+            START = escape(start)
+            END = escape(end)
+            data = mongo.frequencyDistro(VARIABLE,START, END)
+            if data:
+                return jsonify({"status": "found", "data":data})
             
-#         except Exception as e:
-#             print(f"get_temperature_mmar error: f{str(e)}")
+        except Exception as e:
+            print(f"get_frequency error: f{str(e)}")       
 
-#     # FILE DATA NOT EXIST
-#     return jsonify({"status":"not found","data":[]})
-
-
-# @app.route('/api/mmar/humidity/<start>/<end>', methods=['GET']) 
-# def get_humidity_mmar(start,end):   
-#     '''RETURNS MIN, MAX, AVG AND RANGE FOR HUMIDITY. THAT FALLS WITHIN THE START AND END DATE RANGE'''
-   
-#     if request.method == "GET": 
-#         '''Add your code here to complete this route'''
-
-#         try:
-#             START = escape(start)
-#             END = escape(end)
-#             data = mongo.humidityMMAR(START, END)
-#             if data:
-#                 return jsonify({"status": "found", "data":data})
-            
-#         except Exception as e:
-#             print(f"get_humidity_mmar error: f{str(e)}")
-#     # FILE DATA NOT EXIST
-#     return jsonify({"status":"not found","data":[]})
+    # FILE DATA NOT EXIST
+    return jsonify({"status":"not found","data":[]})
 
 
-# @app.route('/api/frequency/<variable>/<start>/<end>', methods=['GET']) 
-# def get_freq_distro(variable,start,end):   
-#     '''RETURNS FREQUENCY DISTRIBUTION FOR SPECIFIED VARIABLE'''
-   
-#     if request.method == "GET": 
-#         '''Add your code here to complete this route'''     
+@app.route('/api/analysis/stats/<start>/<end>', methods=['GET'])
+def get_aggregated_stats(start, end):
+    '''RETURNS MIN, MAX, AVG, AND RANGE FOR ALL SENSOR FIELDS'''
+    if request.method == "GET":
+        try:
+            START = escape(start)
+            END = escape(end)
+            data = mongo.getAggregatedStats(START, END)
+            if data:
+                return jsonify({"status": "found", "data": data})
+        except Exception as e:
+            print(f"get_aggregated_stats error: {str(e)}")
+    return jsonify({"status": "not found", "data": []})
 
-#         try:
-#             VARIABLE = escape(variable)
-#             START = escape(start)
-#             END = escape(end)
-#             data = mongo.frequencyDistro(VARIABLE,START, END)
-#             if data:
-#                 return jsonify({"status": "found", "data":data})
-            
-#         except Exception as e:
-#             print(f"get_frequency error: f{str(e)}")       
 
-#     # FILE DATA NOT EXIST
-#     return jsonify({"status":"not found","data":[]})
+@app.route('/api/analysis/trends/<start>/<end>/<granularity>', methods=['GET'])
+def get_trend_lines(start, end, granularity):
+    '''RETURNS HOURLY OR DAILY TREND LINES FOR ALL SENSOR FIELDS'''
+    if request.method == "GET":
+        try:
+            START = escape(start)
+            END = escape(end)
+            GRANULARITY = escape(granularity)
+            data = mongo.getTrendLines(START, END, GRANULARITY)
+            if data:
+                return jsonify({"status": "found", "data": data})
+        except Exception as e:
+            print(f"get_trend_lines error: {str(e)}")
+    return jsonify({"status": "not found", "data": []})
+
+
+@app.route('/api/analysis/frequency/<variable>/<start>/<end>', methods=['GET'])
+def get_frequency_bucketed(variable, start, end):
+    '''RETURNS FREQUENCY DISTRIBUTION WITH APPROPRIATE BOUNDARIES FOR EACH VARIABLE'''
+    if request.method == "GET":
+        try:
+            VARIABLE = escape(variable)
+            START = escape(start)
+            END = escape(end)
+            data = mongo.getFrequencyDistributionBucketed(VARIABLE, START, END)
+            if data:
+                return jsonify({"status": "found", "data": data})
+        except Exception as e:
+            print(f"get_frequency_bucketed error: {str(e)}")
+    return jsonify({"status": "not found", "data": []})
+
+
+@app.route('/api/analysis/scatter/<start>/<end>', methods=['GET'])
+def get_scatter_data(start, end):
+    '''RETURNS RAW DATA FOR SCATTER PLOT ANALYSIS'''
+    if request.method == "GET":
+        try:
+            START = escape(start)
+            END = escape(end)
+            data = mongo.getScatterPlotData(START, END)
+            if data:
+                return jsonify({"status": "found", "data": data, "capped": len(data) >= 2000})
+        except Exception as e:
+            print(f"get_scatter_data error: {str(e)}")
+    return jsonify({"status": "not found", "data": [], "capped": False})
+
+
+@app.route('/api/analysis/heat-stress/<start>/<end>/<threshold>', methods=['GET'])
+def get_heat_stress_events(start, end, threshold):
+    '''RETURNS HEAT STRESS EVENT COUNT AND TIMESTAMPS WHERE HEAT_INDEX > THRESHOLD'''
+    if request.method == "GET":
+        try:
+            START = escape(start)
+            END = escape(end)
+            THRESHOLD = float(escape(threshold))
+            data = mongo.getHeatStressEvents(START, END, THRESHOLD)
+            return jsonify({"status": "found", "data": data})
+        except Exception as e:
+            print(f"get_heat_stress_events error: {str(e)}")
+    return jsonify({"status": "not found", "data": {"count": 0, "events": []}})
 
 
 ##############################################################
