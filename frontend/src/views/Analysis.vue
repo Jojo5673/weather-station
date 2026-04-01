@@ -339,7 +339,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, watch, onMounted } from "vue";
 import { useAppStore } from "@/store/appStore";
 import Highcharts from "highcharts";
 import Exporting from "highcharts/modules/exporting";
@@ -447,7 +447,7 @@ const createTrendTempChart = () => {
     chart: { zoomType: "x", backgroundColor: "#1e1e1e" },
     title: { text: "Temperature & Heat Index Trend", style: { color: "#FFFFFF" } },
     xAxis: { type: "datetime", labels: { style: { color: "#FFFFFF" } } },
-    yAxis: { title: { text: "Temperature (°C)", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
+    yAxis: { title: { text: "Temperature", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
     legend: { itemStyle: { color: "#FFFFFF" } },
     tooltip: { shared: true, backgroundColor: "#444444" },
     series: [
@@ -462,7 +462,7 @@ const createTrendHumidityChart = () => {
     chart: { zoomType: "x", backgroundColor: "#1e1e1e" },
     title: { text: "Humidity & Moisture Trend", style: { color: "#FFFFFF" } },
     xAxis: { type: "datetime", labels: { style: { color: "#FFFFFF" } } },
-    yAxis: { title: { text: "Percentage (%)", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
+    yAxis: { title: { text: "Percentage", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
     legend: { itemStyle: { color: "#FFFFFF" } },
     tooltip: { shared: true, backgroundColor: "#444444" },
     series: [
@@ -477,7 +477,7 @@ const createTrendPressureChart = () => {
     chart: { zoomType: "x", backgroundColor: "#1e1e1e" },
     title: { text: "Pressure Trend", style: { color: "#FFFFFF" } },
     xAxis: { type: "datetime", labels: { style: { color: "#FFFFFF" } } },
-    yAxis: { title: { text: "Pressure (Pa)", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
+    yAxis: { title: { text: "Pressure", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
     legend: { itemStyle: { color: "#FFFFFF" } },
     tooltip: { shared: true, backgroundColor: "#444444" },
     series: [{ name: "Pressure", type: "spline", data: [], color: getChartColor(3) }]
@@ -489,7 +489,7 @@ const createTrendAltitudeChart = () => {
     chart: { zoomType: "x", backgroundColor: "#1e1e1e" },
     title: { text: "Altitude Trend", style: { color: "#FFFFFF" } },
     xAxis: { type: "datetime", labels: { style: { color: "#FFFFFF" } } },
-    yAxis: { title: { text: "Altitude (m)", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
+    yAxis: { title: { text: "Altitude", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
     legend: { itemStyle: { color: "#FFFFFF" } },
     tooltip: { shared: true, backgroundColor: "#444444" },
     series: [{ name: "Altitude", type: "spline", data: [], color: getChartColor(4) }]
@@ -509,35 +509,35 @@ const createDistributionCharts = () => {
   charts.distTemp = Highcharts.chart("distTempChart", {
     ...chartConfig,
     title: { text: "Temperature Distribution", style: { color: "#FFFFFF" } },
-    xAxis: { ...chartConfig.xAxis, title: { text: "Temperature (°C)", style: { color: "#FFFFFF" } } },
+    xAxis: { ...chartConfig.xAxis, title: { text: "Temperature", style: { color: "#FFFFFF" } } },
     series: [{ ...chartConfig.series[0], color: getChartColor(0), name: "Temperature" }]
   });
   
   charts.distHumidity = Highcharts.chart("distHumidityChart", {
     ...chartConfig,
     title: { text: "Humidity Distribution", style: { color: "#FFFFFF" } },
-    xAxis: { ...chartConfig.xAxis, title: { text: "Humidity (%)", style: { color: "#FFFFFF" } } },
+    xAxis: { ...chartConfig.xAxis, title: { text: "Humidity", style: { color: "#FFFFFF" } } },
     series: [{ ...chartConfig.series[0], color: getChartColor(1), name: "Humidity" }]
   });
   
   charts.distMoisture = Highcharts.chart("distMoistureChart", {
     ...chartConfig,
     title: { text: "Moisture Distribution", style: { color: "#FFFFFF" } },
-    xAxis: { ...chartConfig.xAxis, title: { text: "Moisture (%)", style: { color: "#FFFFFF" } } },
+    xAxis: { ...chartConfig.xAxis, title: { text: "Moisture", style: { color: "#FFFFFF" } } },
     series: [{ ...chartConfig.series[0], color: getChartColor(2), name: "Moisture" }]
   });
   
   charts.distPressure = Highcharts.chart("distPressureChart", {
     ...chartConfig,
     title: { text: "Pressure Distribution", style: { color: "#FFFFFF" } },
-    xAxis: { ...chartConfig.xAxis, title: { text: "Pressure (Pa)", style: { color: "#FFFFFF" } } },
+    xAxis: { ...chartConfig.xAxis, title: { text: "Pressure", style: { color: "#FFFFFF" } } },
     series: [{ ...chartConfig.series[0], color: getChartColor(3), name: "Pressure" }]
   });
   
   charts.distAltitude = Highcharts.chart("distAltitudeChart", {
     ...chartConfig,
     title: { text: "Altitude Distribution", style: { color: "#FFFFFF" } },
-    xAxis: { ...chartConfig.xAxis, title: { text: "Altitude (m)", style: { color: "#FFFFFF" } } },
+    xAxis: { ...chartConfig.xAxis, title: { text: "Altitude", style: { color: "#FFFFFF" } } },
     series: [{ ...chartConfig.series[0], color: getChartColor(4), name: "Altitude" }]
   });
 };
@@ -560,22 +560,22 @@ const createScatterCharts = () => {
   charts.scatterTempHumidity = Highcharts.chart("scatterTempHumidityChart", {
     ...scatterConfig,
     title: { text: "Temperature vs Humidity", style: { color: "#FFFFFF" } },
-    xAxis: { ...scatterConfig.xAxis, title: { text: "Temperature (°C)", style: { color: "#FFFFFF" } } },
-    yAxis: { ...scatterConfig.yAxis, title: { text: "Humidity (%)", style: { color: "#FFFFFF" } } }
+    xAxis: { ...scatterConfig.xAxis, title: { text: "Temperature", style: { color: "#FFFFFF" } } },
+    yAxis: { ...scatterConfig.yAxis, title: { text: "Humidity", style: { color: "#FFFFFF" } } }
   });
   
   charts.scatterHeatIndexTemp = Highcharts.chart("scatterHeatIndexTempChart", {
     ...scatterConfig,
     title: { text: "Heat Index vs Temperature", style: { color: "#FFFFFF" } },
-    xAxis: { ...scatterConfig.xAxis, title: { text: "Temperature (°C)", style: { color: "#FFFFFF" } } },
-    yAxis: { ...scatterConfig.yAxis, title: { text: "Heat Index (°C)", style: { color: "#FFFFFF" } } }
+    xAxis: { ...scatterConfig.xAxis, title: { text: "Temperature", style: { color: "#FFFFFF" } } },
+    yAxis: { ...scatterConfig.yAxis, title: { text: "Heat Index", style: { color: "#FFFFFF" } } }
   });
   
   charts.scatterPressureAltitude = Highcharts.chart("scatterPressureAltitudeChart", {
     ...scatterConfig,
     title: { text: "Pressure vs Altitude", style: { color: "#FFFFFF" } },
-    xAxis: { ...scatterConfig.xAxis, title: { text: "Altitude (m)", style: { color: "#FFFFFF" } } },
-    yAxis: { ...scatterConfig.yAxis, title: { text: "Pressure (Pa)", style: { color: "#FFFFFF" } } }
+    xAxis: { ...scatterConfig.xAxis, title: { text: "Altitude", style: { color: "#FFFFFF" } } },
+    yAxis: { ...scatterConfig.yAxis, title: { text: "Pressure", style: { color: "#FFFFFF" } } }
   });
 };
 
@@ -584,7 +584,7 @@ const createHeatStressChart = () => {
     chart: { type: "scatter", backgroundColor: "#1e1e1e" },
     title: { text: "Heat Stress Events Timeline", style: { color: "#FFFFFF" } },
     xAxis: { type: "datetime", labels: { style: { color: "#FFFFFF" } } },
-    yAxis: { title: { text: "Heat Index (°C)", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
+    yAxis: { title: { text: "Heat Index", style: { color: "#FFFFFF" } }, labels: { style: { color: "#FFFFFF" } } },
     legend: { itemStyle: { color: "#FFFFFF" } },
     tooltip: { backgroundColor: "#444444" },
     plotOptions: {
