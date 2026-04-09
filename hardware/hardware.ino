@@ -34,10 +34,10 @@
 #define TFT_MOSI  23
 #define TFT_MISO  19
 
-#define BMP_SCL 33
-#define BMP_SDA 25
+#define BMP_SCL 22
+#define BMP_SDA 21
 
-#define DHTPIN 26
+#define DHTPIN 4
 #define DHTTYPE DHT22
 
 #define SOIL 32

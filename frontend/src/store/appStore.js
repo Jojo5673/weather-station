@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { ref } from "vue";
 
 export const useAppStore = defineStore(
   "app",
@@ -17,7 +18,7 @@ export const useAppStore = defineStore(
       // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => {
+      const id = setTimeout(() => {
         controller.abort();
       }, 60000);
       const URL = `/api/climo/get/${start}/${end}`;
@@ -49,7 +50,7 @@ export const useAppStore = defineStore(
       // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => {
+      const id = setTimeout(() => {
         controller.abort();
       }, 60000);
       const URL = `/api/mmar/temperature/${start}/${end}`;
@@ -81,7 +82,7 @@ export const useAppStore = defineStore(
       // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => {
+      const id = setTimeout(() => {
         controller.abort();
       }, 60000);
       const URL = `/api/mmar/humidity/${start}/${end}`;
@@ -113,7 +114,7 @@ export const useAppStore = defineStore(
       // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => {
+      const id = setTimeout(() => {
         controller.abort();
       }, 60000);
       const URL = `/api/frequency/${variable}/${start}/${end}`;
@@ -145,7 +146,7 @@ export const useAppStore = defineStore(
       // FETCH REQUEST WILL TIMEOUT AFTER 20 SECONDS
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => {
+      const id = setTimeout(() => {
         controller.abort();
       }, 60000);
       const URL = `/api/station/units`;
@@ -168,7 +169,7 @@ export const useAppStore = defineStore(
     const getAggregatedStats = async (start, end) => {
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => controller.abort(), 60000);
+      const id = setTimeout(() => controller.abort(), 60000);
       const URL = `/api/analysis/stats/${start}/${end}`;
       try {
         const response = await fetch(URL, { method: "GET", signal: signal });
@@ -189,7 +190,7 @@ export const useAppStore = defineStore(
     const getTrendLines = async (start, end, granularity) => {
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => controller.abort(), 60000);
+      const id = setTimeout(() => controller.abort(), 60000);
       const URL = `/api/analysis/trends/${start}/${end}/${granularity}`;
       try {
         const response = await fetch(URL, { method: "GET", signal: signal });
@@ -210,7 +211,7 @@ export const useAppStore = defineStore(
     const getFrequencyDistribution = async (variable, start, end) => {
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => controller.abort(), 60000);
+      const id = setTimeout(() => controller.abort(), 60000);
       const URL = `/api/analysis/frequency/${variable}/${start}/${end}`;
       try {
         const response = await fetch(URL, { method: "GET", signal: signal });
@@ -231,7 +232,7 @@ export const useAppStore = defineStore(
     const getScatterPlotData = async (start, end) => {
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => controller.abort(), 60000);
+      const id = setTimeout(() => controller.abort(), 60000);
       const URL = `/api/analysis/scatter/${start}/${end}`;
       try {
         const response = await fetch(URL, { method: "GET", signal: signal });
@@ -252,7 +253,7 @@ export const useAppStore = defineStore(
     const getHeatStressEvents = async (start, end, threshold = 32) => {
       const controller = new AbortController();
       const signal = controller.signal;
-      setTimeout(() => controller.abort(), 60000);
+      const id = setTimeout(() => controller.abort(), 60000);
       const URL = `/api/analysis/heat-stress/${start}/${end}/${threshold}`;
       try {
         const response = await fetch(URL, { method: "GET", signal: signal });

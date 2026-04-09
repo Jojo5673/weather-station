@@ -85,19 +85,6 @@ class DB:
         else:                  
             return True
         
-       
-
-    def getAllInRange(self,start, end):
-        '''RETURNS A LIST OF OBJECTS. THAT FALLS WITHIN THE START AND END DATE RANGE'''
-        try:
-            remotedb 	= self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password,self.server,self.port), tls=self.tls)
-            result      = list(remotedb.ELET2415.station.find({"timestamp":{"$gte":int(start),"$lte":int(end)}}, {"_id":0}).sort("timestamp",1))
-        except Exception as e:
-            msg = str(e)
-            print("getAllInRange error ",msg)            
-        else:                  
-            return result
-        
 
     def frequencyDistro(self,variable,start, end):
         '''RETURNS THE FREQUENCY DISTROBUTION FOR A SPECIFIED VARIABLE WITHIN THE START AND END DATE RANGE'''
@@ -111,7 +98,7 @@ class DB:
             return result
 
     def getAggregatedStats(self, start, end):
-        '''RETURNS MIN, MAX, AVG, AND RANGE FOR ALL SENSOR FIELDS WITHIN THE TIME RANGE'''
+        '''RETURNS MIN, MAX, AVG FOR ALL SENSOR FIELDS WITHIN THE TIME RANGE'''
         try:
             remotedb = self.remoteMongo('mongodb://%s:%s@%s:%s' % (self.username, self.password, self.server, self.port), tls=self.tls)
             result = list(remotedb.ELET2415.station.aggregate([
